@@ -1,39 +1,24 @@
-name: LocalXpose CI/CD
+name: LocalXpose Tunnel  
 
-on:
-  push:
-    branches:
-      - main
+on:  
+  push:  
+    branches: [main]  
 
-jobs:
-  build:
-    runs-on: windows-latest
+jobs:  
+  expose-service:  
+    runs-on: windows-latest  
 
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+    steps:  
+      - name: Checkout Repository  
+        uses: actions/checkout@v3  
 
-      - name: Update GitHub Actions Runner
-        run: |
-          git config --global --add safe.directory /__w/_temp/_github_workflow
+      - name: Download LocalXpose  
+        run: |  
+          Invoke-WebRequest -Uri "https://loclx-client.s3.amazonaws.com/loclx-windows-amd64.zip" -OutFile "localxpose.zip"  
+          Expand-Archive -Path "localxpose.zip" -DestinationPath "./localxpose"  
 
-      - name: Download LocalXpose
-        run: |
-          Invoke-WebRequest -Uri "https://loclx-client.s3.amazonaws.com/loclx-windows-amd64.zip" -OutFile "localxpose.zip"
-          Expand-Archive -Path "localxpose.zip" -DestinationPath "./localxpose"
+      - name: Authenticate LocalXpose  
+        run: ./localxpose/loclx.exe authtoken "YOUR_LOCALXPOSE_AUTH_TOKEN"  
 
-      - name: Authenticate LocalXpose
-        run: |
-          ./localxpose/loclx.exe authtoken "${{ secrets.LOCX_AUTH_TOKEN }}"
-
-      - name: Run LocalXpose
-        run: |
-          ./localxpose/loclx.exe --version  # Verify installation
-          ./localxpose/loclx.exe tunnel http --to 8080  # Start a tunnel (change port if needed)
-
-      - name: Upload Logs (Optional)
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: LocalXpose-logs
-          path: logs/
+      - name: Start LocalXpose Tunnel  
+        run: ./localxpose/loclx.exe tunnel http --to 8080  
