@@ -13,6 +13,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Update GitHub Actions Runner
+        run: |
+          git config --global --add safe.directory /__w/_temp/_github_workflow
+
       - name: Download LocalXpose
         run: |
           Invoke-WebRequest -Uri "https://loclx-client.s3.amazonaws.com/loclx-windows-amd64.zip" -OutFile "localxpose.zip"
@@ -25,7 +29,7 @@ jobs:
 
       - name: Upload Logs (Optional)
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # ✅ Updated to v4
         with:
           name: LocalXpose-logs
           path: logs/
