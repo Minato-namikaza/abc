@@ -12,7 +12,7 @@ jobs:
       - name: Checkout Repository  
         uses: actions/checkout@v3  
 
-      - name: Download LocalXpose  
+      - name: Download and Extract LocalXpose  
         run: |  
           Invoke-WebRequest -Uri "https://loclx-client.s3.amazonaws.com/loclx-windows-amd64.zip" -OutFile "localxpose.zip"  
           Expand-Archive -Path "localxpose.zip" -DestinationPath "./localxpose"  
@@ -21,4 +21,4 @@ jobs:
         run: ./localxpose/loclx.exe authtoken "YOUR_LOCALXPOSE_AUTH_TOKEN"  
 
       - name: Start LocalXpose Tunnel  
-        run: ./localxpose/loclx.exe tunnel http --to 8080  
+        run: ./localxpose/loclx.exe tunnel http --to 127.0.0.1:54537  
