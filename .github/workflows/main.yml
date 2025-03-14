@@ -1,26 +1,33 @@
+name: RDP Access
+
+on: [push, workflow_dispatch]
+
 jobs:
   rdp-access:
-    runs-on: windows-2022
+    runs-on: windows-latest
+
     steps:
-      - name: Enable RDP
-        run: |
-          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
-          net user github Password@123 /add
-          net localgroup "Remote Desktop Users" github /add
-          Write-Host "RDP Enabled Successfully!"
-        shell: powershell
+    - name: Download LocalXpose (`loclx`)
+      run: Invoke-WebRequest https://api.localxpose.io/api/v2/downloads/loclx-windows-amd64.zip -OutFile loclx.zip
 
-      - name: Download LocalXpose
-        run: |
-          Invoke-WebRequest -Uri "https://loclx-client.s3.amazonaws.com/loclx-windows-amd64.zip" -OutFile "localxpose.zip"
-          Expand-Archive -Path "localxpose.zip" -DestinationPath "./localxpose"
-        shell: powershell
+    - name: Extract LocalXpose
+      run: Expand-Archive loclx.zip
 
-      - name: Authenticate LocalXpose
-        run: ./localxpose/loclx.exe authtoken "LOCX_AUTH_TOKEN"
-        shell: powershell
+    - name: Authenticate LocalXpose
+      run: .\loclx\loclx.exe account login --token $Env:LOCXPOSE_AUTH_TOKEN
+      env:
+        LOCXPOSE_AUTH_TOKEN: ${{ secrets.LOCXPOSE_AUTH_TOKEN }}
 
-      - name: Expose RDP Port
-        run: ./localxpose/loclx.exe tcp --to 3389
-        shell: powershell
+    - name: Enable RDP & Firewall Rules
+      run: |
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
+
+    - name: Create a New User
+      run: |
+        net user github Password@123 /add
+        net localgroup "Remote Desktop Users" github /add
+
+    - name: Start LocalXpose Tunnel
+      run: .\loclx\loclx.exe tunnel --proto tcp --port 3389
