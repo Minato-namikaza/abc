@@ -14,13 +14,17 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Update GitHub Actions Runner
-        run: |
-          git config --global --add safe.directory /__w/_temp/_github_workflow
+        run: git config --global --add safe.directory /__w/_temp/_github_workflow
 
       - name: Download LocalXpose
         run: |
           Invoke-WebRequest -Uri "https://loclx-client.s3.amazonaws.com/loclx-windows-amd64.zip" -OutFile "localxpose.zip"
           Expand-Archive -Path "localxpose.zip" -DestinationPath "./localxpose"
+
+      - name: Authenticate LocalXpose
+        run: ./localxpose/loclx.exe authtoken $env:LOCX_AUTH_TOKEN
+        env:
+          LOCX_AUTH_TOKEN: ${{ secrets.LOCX_AUTH_TOKEN }}  # ✅ Store your token as a GitHub Secret
 
       - name: Run LocalXpose
         run: |
@@ -29,7 +33,7 @@ jobs:
 
       - name: Upload Logs (Optional)
         if: failure()
-        uses: actions/upload-artifact@v4  # ✅ Updated to v4
+        uses: actions/upload-artifact@v4
         with:
           name: LocalXpose-logs
           path: logs/
