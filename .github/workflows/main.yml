@@ -14,7 +14,7 @@ jobs:
       run: Expand-Archive loclx.zip
 
     - name: Authenticate LocalXpose
-      run: .\loclx\loclx.exe account login --token $Env:LOCXPOSE_AUTH_TOKEN
+      run: .\loclx\loclx.exe account login $Env:LOCXPOSE_AUTH_TOKEN
       env:
         LOCXPOSE_AUTH_TOKEN: ${{ secrets.LOCXPOSE_AUTH_TOKEN }}
 
@@ -29,5 +29,5 @@ jobs:
         net user github Password@123 /add
         net localgroup "Remote Desktop Users" github /add
 
-    - name: Start LocalXpose Tunnel
-      run: .\loclx\loclx.exe tunnel --proto tcp --port 3389
+    - name: Start LocalXpose TCP Tunnel
+      run: .\loclx\loclx.exe tunnel tcp --port 3389
