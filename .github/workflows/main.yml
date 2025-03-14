@@ -1,24 +1,26 @@
-name: LocalXpose Tunnel  
+jobs:
+  rdp-access:
+    runs-on: windows-2022
+    steps:
+      - name: Enable RDP
+        run: |
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+          net user github Password@123 /add
+          net localgroup "Remote Desktop Users" github /add
+          Write-Host "RDP Enabled Successfully!"
+        shell: powershell
 
-on:  
-  push:  
-    branches: [main]  
+      - name: Download LocalXpose
+        run: |
+          Invoke-WebRequest -Uri "https://loclx-client.s3.amazonaws.com/loclx-windows-amd64.zip" -OutFile "localxpose.zip"
+          Expand-Archive -Path "localxpose.zip" -DestinationPath "./localxpose"
+        shell: powershell
 
-jobs:  
-  expose-service:  
-    runs-on: windows-latest  
+      - name: Authenticate LocalXpose
+        run: ./localxpose/loclx.exe authtoken "LOCX_AUTH_TOKEN"
+        shell: powershell
 
-    steps:  
-      - name: Checkout Repository  
-        uses: actions/checkout@v3  
-
-      - name: Download and Extract LocalXpose  
-        run: |  
-          Invoke-WebRequest -Uri "https://loclx-client.s3.amazonaws.com/loclx-windows-amd64.zip" -OutFile "localxpose.zip"  
-          Expand-Archive -Path "localxpose.zip" -DestinationPath "./localxpose"  
-
-      - name: Authenticate LocalXpose  
-        run: ./localxpose/loclx.exe authtoken "YOUR_LOCALXPOSE_AUTH_TOKEN"  
-
-      - name: Start LocalXpose Tunnel  
-        run: ./localxpose/loclx.exe tunnel http --to 127.0.0.1:54537  
+      - name: Expose RDP Port
+        run: ./localxpose/loclx.exe tcp --to 3389
+        shell: powershell
