@@ -14,9 +14,10 @@ jobs:
       run: Expand-Archive loclx.zip
 
     - name: Authenticate LocalXpose
-      run: .\loclx\loclx.exe account login $Env:LOCX_AUTH_TOKEN
+      run: |
+        echo "${{ secrets.LOCX_AUTH_TOKEN }}" | .\loclx\loclx.exe account login
       env:
-        LOCXPOSE_AUTH_TOKEN: ${{ secrets.LOCXPOSE_AUTH_TOKEN }}
+        LOCX_AUTH_TOKEN: ${{ secrets.LOCX_AUTH_TOKEN }}
 
     - name: Enable RDP & Firewall Rules
       run: |
