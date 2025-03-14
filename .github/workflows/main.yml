@@ -14,7 +14,7 @@ jobs:
       run: Expand-Archive loclx.zip
 
     - name: Authenticate LocalXpose
-      run: .\loclx\loclx.exe account login $Env:LOCXPOSE_AUTH_TOKEN
+      run: .\loclx\loclx.exe account login $Env:LOCX_AUTH_TOKEN
       env:
         LOCXPOSE_AUTH_TOKEN: ${{ secrets.LOCXPOSE_AUTH_TOKEN }}
 
